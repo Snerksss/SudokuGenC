@@ -53,6 +53,7 @@ void showGameField(int field[9][9]) {
         } else {
             printf("\n");
         }
+        //Test
     }
 }
 
