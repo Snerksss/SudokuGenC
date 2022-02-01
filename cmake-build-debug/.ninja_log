@@ -1,0 +1,4 @@
+# ninja log v5
+1	219	6654121993459669	CMakeFiles/SodokuGenC.dir/main.c.obj	d478e0d2141f1c68
+26	229	6654121993539656	CMakeFiles/SodokuGenC.dir/stack.c.obj	3fcb587f5a5ed3c7
+229	518	6654121996399789	SodokuGenC.exe	64b27def5a10bc2d
