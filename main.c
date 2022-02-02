@@ -16,7 +16,6 @@
 #include <math.h>
 #include <time.h>
 
-
 int gameArea[9][9];
 int gameField[9][9];
 int kontrollArea[9][9];
@@ -116,6 +115,51 @@ int CheckGamePlay() {
     return 1;
 }
 
+int TryToSetPlayerCord(char eingabe[30]) {
+    int y, x, zahl;
+    if(eingabe[0] >= 'a' && eingabe[0] <= 'i') {
+        y = eingabe[0] - 'a';
+        if(eingabe[1] >= '1' && eingabe[1] <= '9') {
+            x = eingabe[1] - '0';
+            x -= 1;
+            if(eingabe[2] == ','){
+                if(eingabe[3] >= '1' && eingabe[3] <= '9'){
+                    zahl = eingabe[3] - '0';
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+int ChangeRequest(char eingabe[30]) {
+    if(strcmp(eingabe, "UNDO") == 0) {
+        return 1;
+    } else {
+        if(strcmp(eingabe, "RULES_ON") == 0) {
+            return 1;
+        } else {
+            if(strcmp(eingabe, "RULES_OFF") == 0) {
+                return 1;
+            } else {
+                if(strcmp(eingabe, "SHOW_SOLUTION_ON") == 0) {
+                    return 1;
+                } else {
+                    if(strcmp(eingabe, "SHOW_SOLUTION_OFF") == 0) {
+                        return 1;
+                    } else{
+                        if(strcmp(eingabe, "STOP_GAME") == 0) {
+                            return 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 void PlayerInput() {
     ShowGameField(gameArea);
     int bool = 1;
@@ -125,12 +169,28 @@ void PlayerInput() {
         int x = 0;
         char buchstabe;
         int zahl;
-        do {
-            printf("\n");
-            printf("gebe bitte die Position und die passende Zahl ein\n");
-            printf("Bsp.: a1, 1\n");
-            printf("\n");
-        } while (0 == scanf("%1s%1d, %1d", &buchstabe, &y, &zahl));
+        char eingabe[30];
+        char eingabe2[30];
+        for(int i = 0; i < sizeof(eingabe); i++) {
+            eingabe[i] = '/';
+        }
+        printf("\n");
+        printf("gebe bitte die Position und die passende Zahl ein\n");
+        printf("Bsp.: a1,1\n");
+        printf("\n");
+        int testDurchlauf = 1;
+        while (testDurchlauf == 1) {
+            if(1 == scanf("%30s", &eingabe, &eingabe2)) {
+                if(1 == ChangeRequest(eingabe)) {
+                    testDurchlauf = 0;
+                } else {
+                    if(1 == TryToSetPlayerCord(eingabe)) {
+                        testDurchlauf = 0;
+                    }
+                }
+            }
+        }
+
         for (int i = 0; i < 25; i++) {
             printf("\n");
         }
