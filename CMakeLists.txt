@@ -9,3 +9,4 @@ add_executable(SodokuGenC
         main.c
         stack.c
         stack.h)
+

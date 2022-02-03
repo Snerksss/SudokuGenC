@@ -1,10 +1,8 @@
-"C:\Program Files\JetBrains\CLion 2021.3.2\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2021.3.2/bin/ninja/win/ninja.exe" -G Ninja C:\Users\simon\CLionProjects\SodokuGenC
--- The C compiler identification is GNU 11.2.0
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: C:/Program Files/JetBrains/CLion 2021.3.2/bin/mingw/bin/gcc.exe - skipped
--- Detecting C compile features
--- Detecting C compile features - done
--- Configuring done
--- Generating done
--- Build files have been written to: C:/Users/simon/CLionProjects/SodokuGenC/cmake-build-debug
+/var/lib/snapd/snap/clion/180/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/var/lib/snapd/snap/clion/180/bin/ninja/linux/ninja -G Ninja /home/larsjaeger/CLionProjects/SodokuGenC
+CMake Error at CMakeLists.txt:8 (target_link_libraries):
+  Cannot specify link libraries for target "SodokuGenC" which is not built by
+  this project.
+
+
+-- Configuring incomplete, errors occurred!
+See also "/home/larsjaeger/CLionProjects/SodokuGenC/cmake-build-debug/CMakeFiles/CMakeOutput.log".

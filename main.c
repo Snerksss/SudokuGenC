@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <string.h>
 
 int gameArea[9][9];
 int gameField[9][9];
@@ -256,9 +257,10 @@ int RekursivFill(int line, int row) {
         row = sqrLR;
 
 
-    for (int testZahl = 1; testZahl <= numberLR; testZahl++) {
-        if (CheckRules(line, row, testZahl) == 1) {
-            gameArea[line][row] = testZahl;
+    const int start_val = rand() % numberLR;
+    for (int testZahl = start_val; testZahl < start_val + numberLR; testZahl++) {
+        if (CheckRules(line, row, (testZahl % 9) + 1) == 1) {
+            gameArea[line][row] = (testZahl % 9) + 1;
             if (RekursivFill(line, row + 1) == 1) {
                 //Uebergabe des Abbruchs bis zum ersten Aufruf
                 return 1;
@@ -347,7 +349,7 @@ int main(int argc, char **argv) {
     printf("\n");
     */
     numberLR = 9;
-    sqrLR = (int) sqrt(numberLR);
+    sqrLR = 3;
     GenNew();
     ShowGameField(kontrollArea);
 
