@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-#include <string.h>
 
 int gameArea[9][9];
 int gameField[9][9];
@@ -349,7 +348,7 @@ int main(int argc, char **argv) {
     printf("\n");
     */
     numberLR = 9;
-    sqrLR = 3;
+    sqrLR = (int) sqrt(numberLR);
     GenNew();
     ShowGameField(kontrollArea);
 
