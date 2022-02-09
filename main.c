@@ -15,14 +15,22 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <string.h>
+#include "stack.h"
+
+#define KGRN  "\x1B[32m"   // green
 
 int gameArea[9][9];
 int gameField[9][9];
 int kontrollArea[9][9];
+int rules;
+int solution;
+int stop;
 int numberLR;
 int sqrLR;
+myStack_t *playerstack;
 
-
+//zeichnet ein 9x9 Feld
 void ShowGameField(int field[9][9]) {
     printf("     A B C   D E F   G H I \n");
     printf("     -----   -----   ----- \n");
@@ -55,15 +63,56 @@ void ShowGameField(int field[9][9]) {
     }
 }
 
-int IndexOf(char alphabet[9], char buchstabe) {
+void ShowSimilarNumbersInColour(int field[9][9], int compareField[9][9]) {
+    printf("     A B C   D E F   G H I \n");
+    printf("     -----   -----   ----- \n");
     for (int i = 0; i < 9; i++) {
-        if (alphabet[i] == buchstabe) {
-            return i;
+        printf(" %d | ", i + 1);
+        for (int j = 0; j < 9; j++) {
+            if (j == 2 || j == 5 || j == 8) {
+                int tmp = field[i][j];
+                if (tmp != 0) {
+                    if (compareField[i][j] == tmp) {
+                        printf("%s%d | ", KGRN, tmp);
+
+                    } else {
+                        printf("%d | ", tmp);
+
+                    }
+                } else {
+                    printf("  | ");
+                }
+            } else {
+                int tmp = field[i][j];
+                if (tmp != 0) {
+                    if (compareField[i][j] == tmp) {
+                        printf("%s%d ", KGRN, tmp);
+
+                    } else {
+                        printf("%d ", tmp);
+
+                    }
+                } else {
+                    printf("  ");
+                }
+            }
+        }
+        if (i == 2 || i == 5 || i == 8) {
+            printf("\n");
+            printf("     -----   -----   ----- \n");
+        } else {
+            printf("\n");
         }
     }
-    return 10;
 }
 
+void PrintfN(int number) {
+    for (int i = 0; i < number; i++) {
+        printf("\n");
+    }
+}
+
+//checkt eine Spalte
 int CheckLine(int line, int row, int zahl) {
     for (int i = 0; i < 9; i++) {
         if (gameArea[line][i] == zahl) {
@@ -73,6 +122,7 @@ int CheckLine(int line, int row, int zahl) {
     return 1;
 }
 
+//checkt die ganze Reihe
 int CheckRow(int line, int row, int zahl) {
     for (int i = 0; i < 9; i++) {
         if (gameArea[i][row] == zahl) {
@@ -82,6 +132,7 @@ int CheckRow(int line, int row, int zahl) {
     return 1;
 }
 
+//checkt eine 3x3 Box
 int CheckBox(int line, int row, int zahl) {
     int tmpLine = line / 3;
     int tmpRow = row / 3;
@@ -97,6 +148,7 @@ int CheckBox(int line, int row, int zahl) {
     return 1;
 }
 
+//checkt Regeln zum setzen einzelner Zahlen
 int CheckRules(int line, int row, int zahl) {
     if (CheckRow(line, row, zahl) == 1 && CheckLine(line, row, zahl) == 1 && CheckBox(line, row, zahl) == 1) {
         return 1;
@@ -104,54 +156,109 @@ int CheckRules(int line, int row, int zahl) {
     return 0;
 }
 
-int CheckGamePlay() {
-    for (int i = 0; i < 9; i++) {
+//checkt ob alle Regeln erfuellt sind;
+//wird nur ausgefuehrt, wenn alle Felder belegt sind.
+int CheckRulesForPlayer() {
+    for (int i = 1; i <= 9; i++) {
+        int count = 0;
         for (int j = 0; j < 9; j++) {
-            if (gameArea[i][j] != kontrollArea[i][j]) {
+            for (int k = 0; k < 9; k++) {
+                if (gameArea[j][k] == i) {
+                    count++;
+                }
+            }
+            if (count != 1) {
                 return 0;
+            } else {
+                count = 0;
+            }
+        }
+        for (int j = 0; j < 9; j++) {
+            for (int k = 0; k < 9; k++) {
+                if (gameArea[k][j] == i) {
+                    count++;
+                }
+            }
+            if (count != 1) {
+                return 0;
+            } else {
+                count = 0;
+            }
+        }
+        for (int j = 0; j < 9; j += 3) {
+            for (int k = 0; k < 9; k += 3) {
+                for (int l = 0; l < 3; l++) {
+                    for (int m = 0; m < 3; m++) {
+                        if (gameArea[j + l][k + m] == i) {
+                            count++;
+                        }
+                    }
+                }
+                if (count != 1) {
+                    return 0;
+                } else {
+                    count = 0;
+                }
             }
         }
     }
     return 1;
 }
 
-int TryToSetPlayerCord(char eingabe[30]) {
-    int y, x, zahl;
-    if(eingabe[0] >= 'a' && eingabe[0] <= 'i') {
-        y = eingabe[0] - 'a';
-        if(eingabe[1] >= '1' && eingabe[1] <= '9') {
-            x = eingabe[1] - '0';
-            x -= 1;
-            if(eingabe[2] == ','){
-                if(eingabe[3] >= '1' && eingabe[3] <= '9'){
-                    zahl = eingabe[3] - '0';
-                    return 1;
-                }
+//checkt, ob der Spieler fertig ist, spiel stoppt dann, passiert nur, wenn alle Felder belegt sind und zudem die Regeln erfuellt sind
+int CheckGamePlay() {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            if (gameArea[i][j] == 0) {
+                return 0;
             }
         }
     }
-    return 0;
+    if (CheckRulesForPlayer() == 0) {
+        return 0;
+    }
+    return 1;
 }
 
-int ChangeRequest(char eingabe[30]) {
-    if(strcmp(eingabe, "UNDO") == 0) {
-        return 1;
-    } else {
-        if(strcmp(eingabe, "RULES_ON") == 0) {
-            return 1;
-        } else {
-            if(strcmp(eingabe, "RULES_OFF") == 0) {
-                return 1;
-            } else {
-                if(strcmp(eingabe, "SHOW_SOLUTION_ON") == 0) {
-                    return 1;
-                } else {
-                    if(strcmp(eingabe, "SHOW_SOLUTION_OFF") == 0) {
-                        return 1;
-                    } else{
-                        if(strcmp(eingabe, "STOP_GAME") == 0) {
-                            return 1;
+//checkt ob der Spieler versucht auf ein vorgegebenes Feld eine Zahl zu setzen
+int CheckGivenNumber(int line, int row) {
+    if (gameField[line][row] != 0) {
+        return 0;
+    }
+    return 1;
+}
+
+//versucht die eingegebene Koordinate zu verarbeitn
+int TryToSetPlayerCord(char eingabe[30]) {
+    int y, x, zahl;
+    if (eingabe[0] >= 'a' && eingabe[0] <= 'i') {
+        y = eingabe[0] - 'a';
+        if (eingabe[1] >= '1' && eingabe[1] <= '9') {
+            x = eingabe[1] - '0';
+            x -= 1;
+            if (eingabe[2] == ',') {
+                if (eingabe[3] >= '1' && eingabe[3] <= '9') {
+                    zahl = eingabe[3] - '0';
+                    if (CheckGivenNumber(x, y)) {
+                        if (rules == 1) {
+                            if (CheckRules(x, y, zahl)) {
+                                gameArea[x][y] = zahl;
+                                position set = {x, y};
+                                Push(playerstack, &set);
+                            } else {
+                                printf("\nDie Regelpruefung ist fehlgeschlagen");
+                                printf("\n");
+                                return 0;
+                            }
+                        } else {
+                            gameArea[x][y] = zahl;
+                            position set = {x, y};
+                            Push(playerstack, &set);
                         }
+                        return 1;
+                    } else {
+                        printf("\nDas versuchte Feld ist ein vorgegebenes Feld");
+                        printf("\n");
                     }
                 }
             }
@@ -160,50 +267,101 @@ int ChangeRequest(char eingabe[30]) {
     return 0;
 }
 
-void PlayerInput() {
-    ShowGameField(gameArea);
-    int bool = 1;
-    char alphabet[9] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'};
-    while (CheckGamePlay() == 0) {
-        int y = 0;
-        int x = 0;
-        char buchstabe;
-        int zahl;
-        char eingabe[30];
-        char eingabe2[30];
-        for(int i = 0; i < sizeof(eingabe); i++) {
-            eingabe[i] = '/';
+
+//laesst den Spieler einen Schritt zurueck gehen
+void Undo() {
+    if (IsStackEmpty(playerstack) == 0) {
+        position temp;
+        Pop(playerstack, &temp);
+        gameArea[temp.line][temp.row] = 0;
+    }
+}
+
+
+//aktiviert/deaktiviert die Regeln
+void RulesSwitch() {
+    if (rules == 1) {
+        rules = 0;
+    } else {
+        rules = 1;
+    }
+}
+
+
+//Zeigt die Loesung an oder zeigt sie nicht mehr an
+void SolutionSwitch() {
+    if (solution == 1) {
+        solution = 0;
+    } else {
+        solution = 1;
+    }
+}
+
+
+//Stoppt das Spiel
+void Stop() {
+    stop = 1;
+}
+
+//wird abgefragt, ob eins der Keywords aufgerufen wurde
+int ChangeRequest(char eingabe[30]) {
+    if (strcmp(eingabe, "UNDO") == 0) {
+        Undo();
+        return 1;
+    } else {
+        if (strcmp(eingabe, "RULES") == 0) {
+            RulesSwitch();
+            return 1;
+        } else {
+            if (strcmp(eingabe, "SOLUTION") == 0) {
+                SolutionSwitch();
+                return 1;
+            } else {
+                if (strcmp(eingabe, "STOP_GAME") == 0) {
+                    Stop();
+                    return 1;
+                }
+            }
         }
+    }
+    return 0;
+}
+
+//Player Funktion, steuert die Funktionen des Spielers
+void PlayerInput() {
+    playerstack = StackNew(sizeof(position), 81);
+    ShowSimilarNumbersInColour(gameArea, gameField);
+    solution = 0;
+    rules = 0;
+    stop = 0;
+    while (CheckGamePlay() == 0 && stop == 0) {
+        char eingabe[30];
         printf("\n");
-        printf("gebe bitte die Position und die passende Zahl ein\n");
-        printf("Bsp.: a1,1\n");
+        printf("gebe bitte die Position und die passende Zahl ein;   Bsp.: a1,1\n");
+        printf("oder nutze einen der folgenden Befehlen\n");
+        printf("UNDO, RULES, SOLUTION, STOP_GAME\n");
         printf("\n");
         int testDurchlauf = 1;
         while (testDurchlauf == 1) {
-            if(1 == scanf("%30s", &eingabe, &eingabe2)) {
-                if(1 == ChangeRequest(eingabe)) {
+            if (1 == scanf("%30s", &eingabe)) {
+                if (ChangeRequest(eingabe)) {
                     testDurchlauf = 0;
                 } else {
-                    if(1 == TryToSetPlayerCord(eingabe)) {
+                    if (TryToSetPlayerCord(eingabe)) {
                         testDurchlauf = 0;
                     }
                 }
             }
         }
-
-        for (int i = 0; i < 25; i++) {
-            printf("\n");
+        if (stop != 1) {
+            PrintfN(25);
+            ShowGameField(gameArea);
         }
-        x = IndexOf(alphabet, buchstabe);
-        if (zahl > 0 && zahl < 10 && x >= 0 && x != 10)
-            if (gameField[y - 1][x] == 0)
-                gameArea[y - 1][x] = zahl;
-
-        ShowGameField(gameField);
-        printf("\n");
-        printf("\n");
-        printf("\n");
-        ShowGameField(gameArea);
+    }
+    if (CheckRulesForPlayer()) {
+        PrintfN(5);
+        printf("\nHERZLICHEN GLUECKWUNSCH ZUM BEZWINGEN DES SUDOKUS");
+        PrintfN(5);
     }
 }
 
@@ -316,19 +474,18 @@ void GenNew() {
 
     CopyField();
 
-    ClearField(50);
+
+    int numberOfStand = rand() % (36 - 17 + 1) + 17;
+    //ClearField(81 - numberOfStand);
+    ClearField(1);
 
     CopyPlayerField();
 
 }
 
-void PrintfN(int number) {
-    for (int i = 0; i < number; i++) {
-        printf("\n");
-    }
-}
 
 int main(int argc, char **argv) {
+    setbuf(stdout, 0);
     for (int i = 0; i < 9; i++) {
         //Definition eines Arrays mit in diesem Fall auf jedem Feld mit der Zahl 0
         //0 steht fuer ein nicht belegtes Feld
