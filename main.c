@@ -18,11 +18,20 @@
 #include <string.h>
 #include "stack.h"
 
+#define KNRM  "\x1B[0m"    // normal
+#define KRED  "\x1B[31m"   // red
 #define KGRN  "\x1B[32m"   // green
+#define KYEL  "\x1B[33m"   // yellow
+#define KBLU  "\x1B[34m"   // blue
+#define KMAG  "\x1B[35m"   // magenta
+#define KCYN  "\x1B[36m"   // cyan
+#define KWHT  "\x1B[37m"   // white
+
 
 int gameArea[9][9];
 int gameField[9][9];
 int kontrollArea[9][9];
+int testArea[9][9];
 int rules;
 int solution;
 int stop;
@@ -40,15 +49,17 @@ void ShowGameField(int field[9][9]) {
             if (j == 2 || j == 5 || j == 8) {
                 int tmp = field[i][j];
                 if (tmp != 0) {
-                    printf("%d | ", tmp);
-
+                    printf("%s%d", KRED, tmp);
+                    printf("%s", KNRM);
+                    printf(" | ");
                 } else {
                     printf("  | ");
                 }
             } else {
                 int tmp = field[i][j];
                 if (tmp != 0) {
-                    printf("%d ", tmp);
+                    printf("%s%d ", KRED, tmp);
+                    printf("%s", KNRM);
                 } else {
                     printf("  ");
                 }
@@ -73,8 +84,9 @@ void ShowSimilarNumbersInColour(int field[9][9], int compareField[9][9]) {
                 int tmp = field[i][j];
                 if (tmp != 0) {
                     if (compareField[i][j] == tmp) {
-                        printf("%s%d | ", KGRN, tmp);
-
+                        printf("%s%d", KGRN, tmp);
+                        printf("%s", KNRM);
+                        printf(" | ");
                     } else {
                         printf("%d | ", tmp);
 
@@ -87,6 +99,7 @@ void ShowSimilarNumbersInColour(int field[9][9], int compareField[9][9]) {
                 if (tmp != 0) {
                     if (compareField[i][j] == tmp) {
                         printf("%s%d ", KGRN, tmp);
+                        printf("%s", KNRM);
 
                     } else {
                         printf("%d ", tmp);
@@ -355,7 +368,12 @@ void PlayerInput() {
         }
         if (stop != 1) {
             PrintfN(25);
-            ShowGameField(gameArea);
+            if(solution == 1) {
+                //ShowGameField(kontrollArea);
+                ShowGameField(testArea);
+                PrintfN(5);
+            }
+            ShowSimilarNumbersInColour(gameArea, gameField);
         }
     }
     if (CheckRulesForPlayer()) {
@@ -449,6 +467,7 @@ void CopyField() {
     for (int i = 0; i < numberLR; i++) {
         for (int j = 0; j < numberLR; j++) {
             kontrollArea[i][j] = gameArea[i][j];
+            testArea[i][j] = gameArea[i][j];
         }
     }
 }
@@ -472,12 +491,12 @@ void GenNew() {
 
     RekursivFill(0, 0);
 
+    ShowGameField(gameArea);
     CopyField();
 
 
     int numberOfStand = rand() % (36 - 17 + 1) + 17;
-    //ClearField(81 - numberOfStand);
-    ClearField(1);
+    ClearField(81 - numberOfStand);
 
     CopyPlayerField();
 
@@ -507,14 +526,7 @@ int main(int argc, char **argv) {
     numberLR = 9;
     sqrLR = (int) sqrt(numberLR);
     GenNew();
-    ShowGameField(kontrollArea);
 
-
-    PrintfN(10);
-    printf("\n              ^");
-    printf("\n              |");
-    printf("\n           Loesung");
-    PrintfN(2);
     PlayerInput();
     return (EXIT_SUCCESS);
 }
