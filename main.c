@@ -369,7 +369,9 @@ void PlayerInput() {
         if (stop != 1) {
             PrintfN(25);
             if(solution == 1) {
+                //Fragen warum es hier nen Fehler gibt???
                 //ShowGameField(kontrollArea);
+                //PrintfN(5);
                 ShowGameField(testArea);
                 PrintfN(5);
             }
@@ -490,8 +492,6 @@ void GenNew() {
     }
 
     RekursivFill(0, 0);
-
-    ShowGameField(gameArea);
     CopyField();
 
 
